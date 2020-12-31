@@ -195,19 +195,15 @@ sudo apt-get update
 sudo apt-get -y upgrade
 
 echo 'Installing stuff...'
-sudo apt-get -y install screen mc zsh git elinks dnsutils nmap htop
+sudo apt-get -y install screen mc vim zsh git elinks dnsutils nmap htop
 
 echo 'Setup environment...'
 # _unquoted_ tilde for home directory, will instantly transform into fullpath
 HOME=~
 
-cat > "$HOME/.screenrc" << 'EOF'
-$SCREENRC
-EOF
+echo "$SCREENRC" > "$HOME/.screenrc"
 mkdir -p "$HOME/.config/mc"
-cat > "$HOME/.config/mc/ini" << 'EOF'
-$MC_INI
-EOF
+echo "$MC_INI" > "$HOME/.config/mc/ini"
 
 ZSH="$HOME/.oh-my-zsh"
 ZSHRC="$HOME/.zshrc"
@@ -215,12 +211,14 @@ git clone --depth=1 --branch "master" "https://github.com/robbyrussell/oh-my-zsh
                 echo "error: git clone of oh-my-zsh repo failed"
         }
 # create custom theme from flazz to remove unicode symbols because of stupid fucking Konsole >_<
-THEME="$ZSH/themes/flazz-no-utf.zsh-theme"
-cp "$ZSH/themes/flazz.zsh-theme" "$THEME"
-sed -i 's|^local return_code=.\+|local return_code="%(?..%{$fg[red]%}%? %{$reset_color%})"|g' "$THEME"
+if [ ! -e "$ZSH/themes/flazz-no-utf.zsh-theme" ]; then
+	THEME="$ZSH/themes/flazz-no-utf.zsh-theme"
+	cp "$ZSH/themes/flazz.zsh-theme" "$THEME"
+	sed -i 's|^local return_code=.\+|local return_code="%(?..%{$fg[red]%}%? %{$reset_color%})"|g' "$THEME"
+fi
 # initialize zshrc
 cp "$ZSH/templates/zshrc.zsh-template" "$ZSHRC"
-sed -i "s|^ZSH_THEME=.\+$|ZSH_THEME=\"flazz-no-utf\"|g" "\$ZSHRC"
+sed -i "s|^ZSH_THEME=.\+$|ZSH_THEME=\"flazz-no-utf\"|g" "$ZSHRC"
 sed -i "s|^.*DISABLE_AUTO_UPDATE=.\+$|DISABLE_AUTO_UPDATE=\"true\"|g" "$ZSHRC"
 sed -i "s|^.*COMPLETION_WAITING_DOTS=.\+$|COMPLETION_WAITING_DOTS=\"true\"|g" "$ZSHRC"
 # make htop showing thread names
@@ -228,4 +226,5 @@ sed -i "s|^show_thread_names=0|show_thread_names=1|g" "$HOME/.config/htop/htoprc
 # add screen start for current user
 echo "" >> "$HOME/.zshrc"
 echo 'if [[ $STY = "" ]] then screen -xR lt; fi' >> "$HOME/.zshrc"
-
+# switch user whell to zsh
+chsh -s "/bin/zsh"

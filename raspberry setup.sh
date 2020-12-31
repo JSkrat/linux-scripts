@@ -198,7 +198,8 @@ echo 'Installing stuff...'
 sudo apt-get -y install screen mc zsh git elinks dnsutils nmap htop
 
 echo 'Setup environment...'
-HOME='~'
+# _unquoted_ tilde for home directory, will instantly transform into fullpath
+HOME=~
 
 cat > "$HOME/.screenrc" << 'EOF'
 $SCREENRC

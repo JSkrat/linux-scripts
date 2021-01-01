@@ -189,7 +189,12 @@ Modified git files=git ls-files --modified
 echo 'Raspberry console env setup. Network has to be set up at this point.'
 echo ''
 
-echo 'Hostname: '
+NO_USER=0
+if [ '--no-user' = "$1" ]; then
+	NO_USER=1
+fi
+
+echo -n 'Hostname: '
 read HOSTNAME
 OLD_HOSTNAME=`hostname`
 
@@ -205,32 +210,31 @@ else
     exit 1
 fi
 
-echo 'Username: '
+echo -n 'Username: '
 read USERNAME
-
-add_groups() {
-	while [ $# -gt 0 ]; do
-		sudo adduser "$USERNAME" "$1"
-		shift
-	done
-}
-sudo adduser --disabled-password --gecos "" "$USERNAME" || exit 1
-add_groups sudo adm users dialout cdrom audio video plugdev games input netdev gpio i2c spi
-sudo passwd "$USERNAME" || exit 1
-echo 'Expiring user pi...'
-sudo -u "$USERNAME" chage -E0 pi
+if [ "$NO_USER" -ne 1 ]; then
+	add_groups() {
+		while [ $# -gt 0 ]; do
+			sudo adduser "$USERNAME" "$1"
+			shift
+		done
+	}
+	sudo adduser --disabled-password --gecos "" "$USERNAME" || exit 1
+	add_groups sudo adm users dialout cdrom audio video plugdev games input netdev gpio i2c spi
+	sudo passwd "$USERNAME" || exit 1
+fi
 
 echo 'Upgrading system...'
-sudo -u "$USERNAME" apt-get update
-sudo -u "$USERNAME" apt-get -y upgrade
+sudo apt-get update
+sudo apt-get -y upgrade
 
 echo 'Installing stuff...'
-sudo -u "$USERNAME" apt-get -y install screen mc vim zsh git lynx elinks dnsutils nmap htop
+sudo apt-get -y install screen mc vim zsh git lynx elinks dnsutils nmap htop
 
 echo 'Setup environment...'
 # _unquoted_ tilde for home directory, will instantly transform into fullpath
 #HOME=~
-HOME='/home/$USERNAME'
+HOME="/home/$USERNAME"
 
 echo "$SCREENRC" > "$HOME/.screenrc"
 mkdir -p "$HOME/.config/mc"
@@ -261,5 +265,7 @@ echo 'if [[ $STY = "" ]] then screen -xR lt; fi' >> "$HOME/.zshrc"
 echo 'Fixing ownership...'
 sudo chown -R "$USERNAME:$USERNAME" "$HOME"
 # switch user whell to zsh
-chsh -s "/bin/zsh" "$USERNAME"
+sudo chsh -s "/bin/zsh" "$USERNAME"
+echo 'Expiring user pi...'
+sudo chage -E0 pi
 echo "Done. User pi is expired now, pls log out and log in as user $USERNAME"

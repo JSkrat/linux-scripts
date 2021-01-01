@@ -186,20 +186,52 @@ Modified git files=git ls-files --modified
 #########################################################################################################################
 #########################################################################################################################
 
-echo 'Please setup wifi (press Enter)'
-read
-sudo raspi-config
+echo 'Raspberry console env setup. Network has to be set up at this point.'
+echo ''
+
+echo 'Hostname: '
+read HOSTNAME
+OLD_HOSTNAME=`hostname`
+
+# validate if the given hostname could be set as static hostname (it will go to /etc/hostname)
+if sudo hostnamectl --no-ask-password set-hostname "$HOSTNAME" --static; then
+    # Set hostname to /etc/hosts to prevent "unable to resolve host" warning
+    sudo sed -ie "s/$OLD_HOSTNAME/$HOSTNAME/g" /etc/hosts
+    # Set new hostname via hostnamectl (will be accessible in /etc/hostname)
+    # (with the option --static hostnamectl will change only the static hostname, not the pretty one, so update it here)
+    sudo hostnamectl --no-ask-password set-hostname "$HOSTNAME"
+else
+    echo "Hostname validation failed"
+    exit 1
+fi
+
+echo 'Username: '
+read USERNAME
+
+add_groups() {
+	while [ $# -gt 0 ]; do
+		adduser "$USERNAME" "$1"
+		shift
+	done
+}
+adduser --disabled-password --gecos "" "$USERNAME" || exit 1
+add_groups sudo adm users dialout cdrom audio video plugdev games input netdev gpio i2c spi
+sudo passwd "$USERNAME"
+su "$USERNAME"
+echo 'Working from $USERNAME, expiring user pi...'
+sudo chage -E0 pi
 
 echo 'Upgrading system...'
 sudo apt-get update
 sudo apt-get -y upgrade
 
 echo 'Installing stuff...'
-sudo apt-get -y install screen mc vim zsh git elinks dnsutils nmap htop
+sudo apt-get -y install screen mc vim zsh git lynx elinks dnsutils nmap htop
 
 echo 'Setup environment...'
 # _unquoted_ tilde for home directory, will instantly transform into fullpath
-HOME=~
+#HOME=~
+HOME='/home/$USERNAME'
 
 echo "$SCREENRC" > "$HOME/.screenrc"
 mkdir -p "$HOME/.config/mc"

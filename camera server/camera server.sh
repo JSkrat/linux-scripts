@@ -21,17 +21,45 @@ INDEX_HTML="
 <!DOCTYPE html>
 <html lang='en'>
 	<head>
+		<style>
+			.navbar, .content {
+				text-align: center;
+				margin-top: 1em;
+			}
+			.navbar a {
+				margin-left: 1ex;
+				margin-right: 1ex;
+			}
+			body {
+				background-color: #111;
+				color: white;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+			a {
+				color: #AAF;
+			}
+			a:hover {
+				text-shadow: white 0 0 1em;
+			}
+			.right {
+				position: absolute;
+				right: 1ex;
+			}
+		</style>
 	</head>
 	<body>
 		<header class='navbar'>
-			<a href='/stream'>Stream</a>
+			<div class='right'><a href='https://github.com/JSkrat/linux-scripts/tree/main/camera%20server'>CamServer</a> ver 1.0</div>
 			<a href='/media'>Files</a>
-			<a href=':8080'>Motion web page</a>
+			<a href='/stream'>Stream</a>
+			<button onclick='javascript:event.target.port=8080'>Motion web page</button>
 		</header>
 		<section class='content'>
-			<a href='/stream'>
-				<img src='/stream'>
-			</a>
+			<p>
+				<a href='/stream'>
+					<img src='/stream'>
+				</a>
+			</p>
 		</section>
 	</body>
 </html>

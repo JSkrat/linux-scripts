@@ -39,7 +39,7 @@ INDEX_HTML="
 
 set_param() {
 	# file parameter value
-	sudo sed -i "s|^\s*;?\s*$2 .*$|$2 $3|g" "$1"
+	sudo sed -i "s|^\s*;\?\s*$2 .*$|$2 $3|g" "$1"
 }
 
 
@@ -53,8 +53,8 @@ sudo apt -y install "./pi_buster_motion_4.3.2-1_armhf.deb"
 # setup motion
 CONFIG="/etc/motion/motion.conf"
 # first fill up initially unexistent parameters
-grep "locate_motion_mode" "$CONFIG" || echo "locate_motion_mode preview" | sudo tee -a "$CONFIG"
-grep "locate_motion_style" "$CONFIG" || echo "locate_motion_style redbox" | sudo tee -a "$CONFIG"
+grep "locate_motion_mode" "$CONFIG" > /dev/null || echo "locate_motion_mode preview" | sudo tee -a "$CONFIG" > /dev/null
+grep "locate_motion_style" "$CONFIG" > /dev/null || echo "locate_motion_style redbox" | sudo tee -a "$CONFIG" > /dev/null
 # update changes
 set_param "$CONFIG" "daemon" "on"
 set_param "$CONFIG" "stream_localhost" "off"
@@ -75,12 +75,12 @@ sudo service motion restart
 
 # setup nginx for file browser
 NGINX_CONF='/etc/nginx/sites-available/motion-static'
-echo "$MOTION_SITE" | sudo tee "$NGINX_CONF"
+echo "$MOTION_SITE" | sudo tee "$NGINX_CONF" > /dev/null
 sudo ln -s "$NGINX_CONF" "/etc/nginx/sites-enabled/motion-static"
 sudo rm "/etc/nginx/sites-enabled/default"
 # add static
 sudo mkdir -p "/var/www/motion"
-echo "$INDEX_HTML" | sudo tee "/var/www/motion/index.html"
+echo "$INDEX_HTML" | sudo tee "/var/www/motion/index.html" > /dev/null
 # make media readable
 sudo chmod o+rx "/var/lib/motion"
 

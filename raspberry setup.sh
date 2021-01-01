@@ -210,23 +210,22 @@ read USERNAME
 
 add_groups() {
 	while [ $# -gt 0 ]; do
-		adduser "$USERNAME" "$1"
+		sudo adduser "$USERNAME" "$1"
 		shift
 	done
 }
-adduser --disabled-password --gecos "" "$USERNAME" || exit 1
+sudo adduser --disabled-password --gecos "" "$USERNAME" || exit 1
 add_groups sudo adm users dialout cdrom audio video plugdev games input netdev gpio i2c spi
-sudo passwd "$USERNAME"
-su "$USERNAME"
-echo 'Working from $USERNAME, expiring user pi...'
-sudo chage -E0 pi
+sudo passwd "$USERNAME" || exit 1
+echo 'Expiring user pi...'
+sudo -u "$USERNAME" chage -E0 pi
 
 echo 'Upgrading system...'
-sudo apt-get update
-sudo apt-get -y upgrade
+sudo -u "$USERNAME" apt-get update
+sudo -u "$USERNAME" apt-get -y upgrade
 
 echo 'Installing stuff...'
-sudo apt-get -y install screen mc vim zsh git lynx elinks dnsutils nmap htop
+sudo -u "$USERNAME" apt-get -y install screen mc vim zsh git lynx elinks dnsutils nmap htop
 
 echo 'Setup environment...'
 # _unquoted_ tilde for home directory, will instantly transform into fullpath
@@ -258,5 +257,9 @@ sed -i "s|^show_thread_names=0|show_thread_names=1|g" "$HOME/.config/htop/htoprc
 # add screen start for current user
 echo "" >> "$HOME/.zshrc"
 echo 'if [[ $STY = "" ]] then screen -xR lt; fi' >> "$HOME/.zshrc"
+# upgrade ownership
+echo 'Fixing ownership...'
+sudo chown -R "$USERNAME:$USERNAME" "$HOME"
 # switch user whell to zsh
-chsh -s "/bin/zsh"
+chsh -s "/bin/zsh" "$USERNAME"
+echo "Done. User pi is expired now, pls log out and log in as user $USERNAME"

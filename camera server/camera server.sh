@@ -37,6 +37,11 @@ INDEX_HTML="
 </html>
 "
 
+set_param() {
+	# file parameter value
+	sudo sed -i "s|^\s*;?\s*$2 .*$|$2 $3|g" "$1"
+}
+
 
 #sudo apt-get -y install autoconf automake build-essential pkgconf libtool git libzip-dev libjpeg-dev gettext libmicrohttpd-dev libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libavdevice-dev default-libmysqlclient-dev libpq-dev libsqlite3-dev libwebp-dev
 
@@ -51,21 +56,20 @@ CONFIG="/etc/motion/motion.conf"
 grep "locate_motion_mode" "$CONFIG" || echo "locate_motion_mode preview" | sudo tee -a "$CONFIG"
 grep "locate_motion_style" "$CONFIG" || echo "locate_motion_style redbox" | sudo tee -a "$CONFIG"
 # update changes
-sudo sed -i "s|daemon |daemon on|g" "$CONFIG"
-sudo sed -i "s|stream_localhost |stream_localhost off|g" "$CONFIG"
-sudo sed -i "s|webcontrol_localhost |webcontrol_localhost off|g" "$CONFIG"
+set_param "$CONFIG" "daemon" "on"
+set_param "$CONFIG" "stream_localhost" "off"
+set_param "$CONFIG" "webcontrol_localhost" "off"
 
-sudo sed -i "s|mmalcam_name |mmalcam_name vc.ril.camera|g" "$CONFIG"
-sudo sed -i "s|event_gap |event_gap 10|g" "$CONFIG"
-sudo sed -i "s|target_dir |target_dir /var/lib/motion|g" "$CONFIG"
-sudo sed -i "s|locate_motion_mode |locate_motion_mode preview|g" "$CONFIG"
-sudo sed -i "s|locate_motion_style |locate_motion_style redbox|g" "$CONFIG"
-# for stream freezes
-sudo sed -i "s|picture_output |picture_output off|g" "$CONFIG"
-sudo sed -i "s|movie_output |movie_output on|g" "$CONFIG"
+set_param "$CONFIG" "mmalcam_name" "vc.ril.camera"
+set_param "$CONFIG" "event_gap" "10"
+set_param "$CONFIG" "target_dir" "/var/lib/motion"
+set_param "$CONFIG" "locate_motion_mode" "preview"
+set_param "$CONFIG" "locate_motion_style" "redbox"
+set_param "$CONFIG" "picture_output" "off"
+set_param "$CONFIG" "movie_output" "on"
 
 DEFCONF="/etc/default/motion"
-sudo sed -i "s|start_motion_daemon=|start_motion_daemon=yes|g" "$DEFCONF"
+sudo sed -i "s|^start_motion_daemon=.*$|start_motion_daemon=yes|g" "$DEFCONF"
 
 sudo service motion restart
 

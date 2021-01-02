@@ -236,34 +236,34 @@ echo 'Setup environment...'
 #HOME=~
 HOME="/home/$USERNAME"
 
-echo "$SCREENRC" > "$HOME/.screenrc"
-mkdir -p "$HOME/.config/mc"
-echo "$MC_INI" > "$HOME/.config/mc/ini"
+echo "$SCREENRC" | sudo -u "$USERNAME" tee "$HOME/.screenrc" > /dev/null
+sudo -u "$USERNAME" mkdir -p "$HOME/.config/mc"
+echo "$MC_INI" |sudo -u "$USERNAME" tee "$HOME/.config/mc/ini" > /dev/null
 
 ZSH="$HOME/.oh-my-zsh"
 ZSHRC="$HOME/.zshrc"
-git clone --depth=1 --branch "master" "https://github.com/robbyrussell/oh-my-zsh.git" "$ZSH" || {
+sudo -u "$USERNAME" git clone --depth=1 --branch "master" "https://github.com/robbyrussell/oh-my-zsh.git" "$ZSH" || {
                 echo "error: git clone of oh-my-zsh repo failed"
         }
 # create custom theme from flazz to remove unicode symbols because of stupid fucking Konsole >_<
 if [ ! -e "$ZSH/themes/flazz-no-utf.zsh-theme" ]; then
 	THEME="$ZSH/themes/flazz-no-utf.zsh-theme"
-	cp "$ZSH/themes/flazz.zsh-theme" "$THEME"
-	sed -i 's|^local return_code=.\+|local return_code="%(?..%{$fg[red]%}%? %{$reset_color%})"|g' "$THEME"
+	sudo -u "$USERNAME" cp "$ZSH/themes/flazz.zsh-theme" "$THEME"
+	sudo -u "$USERNAME" sed -i 's|^local return_code=.\+|local return_code="%(?..%{$fg[red]%}%? %{$reset_color%})"|g' "$THEME"
 fi
 # initialize zshrc
-cp "$ZSH/templates/zshrc.zsh-template" "$ZSHRC"
-sed -i "s|^ZSH_THEME=.\+$|ZSH_THEME=\"flazz-no-utf\"|g" "$ZSHRC"
-sed -i "s|^.*DISABLE_AUTO_UPDATE=.\+$|DISABLE_AUTO_UPDATE=\"true\"|g" "$ZSHRC"
-sed -i "s|^.*COMPLETION_WAITING_DOTS=.\+$|COMPLETION_WAITING_DOTS=\"true\"|g" "$ZSHRC"
+sudo -u "$USERNAME" cp "$ZSH/templates/zshrc.zsh-template" "$ZSHRC"
+sudo -u "$USERNAME" sed -i "s|^ZSH_THEME=.\+$|ZSH_THEME=\"flazz-no-utf\"|g" "$ZSHRC"
+sudo -u "$USERNAME" sed -i "s|^.*DISABLE_AUTO_UPDATE=.\+$|DISABLE_AUTO_UPDATE=\"true\"|g" "$ZSHRC"
+sudo -u "$USERNAME" sed -i "s|^.*COMPLETION_WAITING_DOTS=.\+$|COMPLETION_WAITING_DOTS=\"true\"|g" "$ZSHRC"
 # make htop showing thread names
-sed -i "s|^show_thread_names=0|show_thread_names=1|g" "$HOME/.config/htop/htoprc"
+sudo -u "$USERNAME" sed -i "s|^show_thread_names=0|show_thread_names=1|g" "$HOME/.config/htop/htoprc"
 # add screen start for current user
-echo "" >> "$HOME/.zshrc"
-echo 'if [[ $STY = "" ]] then screen -xR lt; fi' >> "$HOME/.zshrc"
+echo "" | sudo -u "$USERNAME" tee -a "$HOME/.zshrc" > /dev/null
+echo 'if [[ $STY = "" ]] then screen -xR lt; fi' | sudo -u "$USERNAME" tee -a "$HOME/.zshrc" > /dev/null
 # upgrade ownership
-echo 'Fixing ownership...'
-sudo chown -R "$USERNAME:$USERNAME" "$HOME"
+#echo 'Fixing ownership...'
+#sudo chown -R "$USERNAME:$USERNAME" "$HOME"
 # switch user whell to zsh
 sudo chsh -s "/bin/zsh" "$USERNAME"
 echo 'Expiring user pi...'
